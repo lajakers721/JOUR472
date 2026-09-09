@@ -34,6 +34,7 @@ We're going to load the slice of WinRed contribution data from West Virginia, wh
 **Task** Using the example from the pre_lab, write code to load the RDS file and assign it to a good variable name.
 
 ```{r}
+winred_wv <- read_rds("lab_01.rds")
 ```
 
 ## Examine Data
@@ -42,14 +43,14 @@ We're going to load the slice of WinRed contribution data from West Virginia, wh
 
 ```{r}
 # put the name of your data set, which you named in the last step, inside the () below
-glimpse()
+glimpse(winred_wv)
 ```
 
 
 **Q1** How many rows and columns does this dataframe have?
 
 
-**A1**
+**A1** It has 40,441 rows and 24 columns.
 
 
 ## Answer questions
@@ -58,22 +59,29 @@ glimpse()
 
 Hint: you'll need to use group_by() |> summarise() here. What column are we grouping by? Then, what should go inside the summarise() part? Then, rather than clicking through the 500+ cities to find the largest one, use the same function we used in our pre-lab to sort the data from largest number to the smallest.
 
-**A2**
+**A2** Charleston provided the largest number of contributions with 3226.
 
 ```{r}
-
+winred_wv |> 
+  group_by(city) |>
+  summarise (countributions=n())|>
+   arrange(desc(countributions))
 ```
 
 **Q3** Which West Virginia cities accounted for the fewest contributions? You don't have to name all of them, but list a few. How many of those cities are there, roughly speaking?
 
-**A3**
+**A3** There are about 63 cities that accounted for a single contribution. Some of these include Allen Junction, Alum Bridge, Bergoo, Bristol and Buckeye. 
 
 ```{r}
+winred_wv |> 
+  group_by(city) |>
+  summarise (countributions=n()) |>
+  arrange(countributions)
 ```
 
 **Q4** What's your best educated guess to explain why the city identified in question 2 had more contributions compared to the cities identified in question 3? Hint: you won't find the answer in the data, you'll need to do some quick web research. You do not need to write any code for this question, so no codeblock is provided.
 
-**A4**
+**A4** It is most likely a result of the population size of the cities. For instance, Charleston has a population of 45,563 according to Google and Buckeye has 685 according to Google as well. 
 
 **Q5** What recipient got the largest total amount of money? How many contributions did it receive? And what was the average donation it received?
 
@@ -81,23 +89,43 @@ Hint: Since there three distinct questions here, you'll need to do multiple thin
 
 Hint 2: "aggregate_amount" is NOT the column you want to use here.
 
-**A5**
+**A5** The Trump National Committee had the highest total amount of money with $463,944.40. They received a total of 14,063 contributions and the mean of these contributions was 32.9904288.   
 
 ```{r}
-
+winred_wv|>
+  group_by(memo_text) |>
+  summarise(
+    countributions = n(),
+    total_amount = sum(amount),
+    mean_amount = mean(amount))|>
+  arrange(desc(total_amount))
 ```
 
 **Q6** What is that top recipient and what explains its popularity? Hint: this will require web research, you won't be able to answer this purely from the data set. You do not need to write any code for this question, so no codeblock is provided.
 
-**A6**
+**A6** The top recipient was the Trump National Committee. The popularity of it all goes back to how Trump was the Republican nominee in the presidential race and West Virginia, where the data was pulled from, is a Conservative state. That means that residents would be directing more money toward the Republican candidates and with Trump being the top dog, he would get more. 
 
 **BONUS POINTS (do this last / only if you have time at the end)** you might notice that a lot of the top recipient committees seem to be tied to the same person, and some even have nearly-identical committee names. What might be going on here? (You don't need to get this RIGHT, just give me an educated guess or two.)
+
+**A:** My guess goes back to what we discussed in class. Any purchase on a site for their merchandise is considered so maybe for someone like Trump these are coming from direct donations and from campaign merchandise. 
 
 **Q7**. Using the answer from A5 as a starting point, produce a summary table that has the following information for each recipient: \* count of contributions \* total amount of all contributions \* the average contribution amount \* the median contribution amount \* the smallest contribution amount \* the largest contribution amount
 
 Store it as a variable object called `wv_summary` so that you can examine it with the data viewer. What newsworthy nuggets jump out at you that you could imagine dropping into a news story? Write a few summary sentences with overall findings.
 
-**A7**.
+**A7**. The total amount of money earned by the Trump National Committee JFC is astronomically bigger than the second highest as it is over 376,000 higher. Carol for Congress only had 15 contributions but was the ninth highest total amount. This comes as a result as the lowest amount for that group was 250 and the highest was 3300. The average amount was 1490. The name Trump appears in three of the top ten in total amount. 
 
 ```{r}
+wv_summary <- winred_wv |>
+  group_by(memo_text) |>
+  summarise(
+    countributions = n(),
+    total_amount = sum(amount),
+    average_amount = mean(amount),
+    median_amount = median(amount),
+    min_amount = min(amount),
+    max_amount = max(amount)) |>
+  arrange(desc(total_amount))
+  
+  wv_summary
 ```
