@@ -1,0 +1,164 @@
+---
+title: "lab_03"
+author: "Derek Willis, adapted by Aidan Hughes"
+date: "2024-08-01"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Load libraries and establish settings
+
+```{r}
+# Turn off scientific notation
+options(scipen=999)
+
+# Load the tidyverse
+library(tidyverse)
+
+# Load janitor
+library(janitor)
+```
+
+### Load data
+
+```{r}
+# Load MD slice of FEC House candidate contribution data
+md_contribs <- read_rds("data/lab_03.rds")
+```
+
+### Do this first: Fix header issues
+
+You'll need to fix one issue with the column names using janitor. Write a code block to do that, making sure that you save the results to the same dataframe.
+
+```{r}
+md_contribs <- md_contribs |>
+  clean_names() 
+```
+
+
+### **Q1**: Which seven cities in Maryland had the largest *number* of contributions from donors? How many did each have? To answer this question, you'll have to clean the messy "contributor_city" field.
+
+Note: To answer this question, you'll need to see every variation of the "contributor_city" for the top seven cities, which you should identify through some initial analysis. Then find variations of them and change those variations into the most common version.
+
+Hint: you should be starting out with a group_by and summarize just like we did in week 1 and 2. That'll help you identify the top seven names, and then you can click through the data to find variations of those names.
+
+Then, look back at Task 15 in Pre-Lab 3 for a clue about how to update specific values. Don't forget, you'll need a step at the end to ensure that everything aside from the values you're changing stay as the default value.
+
+**A1**: NOTE: I used Google to check if some of these places were actual places. The findings are below.
+1. Bethesda (1177)
+2. Chevy Chase (705)
+3. Baltimore (692)
+4. Annapolis (492)
+5. Potomac (491)
+6. Silver Spring (408)
+7. Rockville (358)
+
+```{r}
+contrib_city_amounts <- md_contribs |>
+  mutate(contributor_city = str_to_title(contributor_city)) |>
+  mutate(contributor_city = case_when(
+    contributor_city == "Uppr Marlboro" ~ "Upper Marlboro",
+    contributor_city == "Silver Springs" ~ "Silver Spring",
+    contributor_city == "Saint Marys City" ~ "St Marys City",
+    contributor_city == "Saint Michaels" ~ "St Michaels",
+    contributor_city == "Riverdale" ~ "Riverdale Park",
+    contributor_city == "Potamic" ~ "Potomac",
+    contributor_city == "Owins Mills" ~ "Owings Mills",
+    contributor_city == "New Marked" ~ "New Market",
+    contributor_city == "Mount Airy" ~ "Mt. Airy",
+    contributor_city == "Mt.airy" ~ "Mt. Airy",
+    contributor_city == "Luthvle Timon" ~ "Lutherville-Timonium", 
+    contributor_city == "Lutherville Timonium" ~ "Lutherville-Timonium", 
+    contributor_city == "Lutherville Timoni" ~ "Lutherville-Timonium", 
+    contributor_city == "Lutherville Timo" ~ "Lutherville-Timonium", 
+    contributor_city == "Lutherville" ~ "Lutherville-Timonium",
+    contributor_city == "Gaitherburg" ~ "Gaithersburg",
+    contributor_city == "Ft Washington" ~ "Fort Washington",
+    contributor_city == "Ellicott" ~ "Ellicott City",
+    contributor_city == "Davisdsonville" ~ "Davidsonville",
+    contributor_city == "Colombia" ~ "Columbia",
+    contributor_city == "Brookville" ~ "Brookeville",
+    contributor_city == "Blatimore" ~ "Baltimore",
+    contributor_city == "Balrimore" ~ "Baltimore",
+    contributor_city == "Belair" ~ "Bel Air",
+    contributor_city == "Anapolis" ~ "Annapolis",
+    contributor_city == "4615 North Park Ave Apt. 1410" ~ "Chevy Chase",
+    TRUE ~ contributor_city)) |>
+  group_by(contributor_city) |>
+  summarise(amount = n())
+
+```
+
+### **Q2:** Find the 5-digit ZIP code in Maryland that had the highest total amount of contributions (by dollar value).
+
+Where is that zip code and what kind of area is it, demographically? Which committee is the largest recipient of money from that zip code? How many of the top five recipients are Maryland candidates?
+
+Hint: You will need to use mutate and str_sub to ensure that you have a zip code column with the first five characters from the existing zip code column.
+
+Other functions you'll need afterwards are filter, group by, summarise, and arrange.
+
+Break this down into individual steps and check your work along the way. That'll make this question more manageable.
+
+**A2:** 20817 was the zip code with the highest total amount. This amount is $731,489.80. This city is Bethesda according to Google (most data about Bethesda comes from Google). According to datausa, Bethesda is a pretty diverse community. The committee that is the largest recipient of money is Helmer for Congress with 17,878. According to Google, only two of the top five committees are located in Maryland with these being Jamie Raskin and April McClain Delaney. Helmer, Friends of Raja for Congress and French Hill for Arkansas are not.  
+
+```{r}
+md_contribs <- md_contribs |>
+  clean_names() |> 
+  mutate(zip = str_sub(contributor_zip, start=1L, end=5L)) 
+
+zip_amount <- md_contribs |>
+  group_by(zip) |>
+  summarise (amount=sum(contribution_receipt_amount))
+
+bethesda <- md_contribs |>
+  filter(zip == 20817) |>
+  group_by(committee_name) |>
+  summarise(amount=sum(contribution_receipt_amount)) |>
+  arrange(desc(amount))
+
+bethesda
+```
+
+### **Q3:**
+
+Let's look at top individual donors. Write code to generate a list of top donors in each city, adding up the total amount of contributions. What does the original data say about the top two donors - who are they and what do they do? Do you see anything in the list of top 10 donors that would make you uncertain about the accuracy of these results?
+
+Hint: you'll need to put two columns in a group_by to answer this question. What are the two categories you're trying to group the data by? Look back at Task 8 in Pre-lab 1 if you need a reminder of how to do this.
+
+**A3:** The top two donors according to the data are Melanie Jacobsen and Mark P. Jacobsen with $96,466.95 and $67,533.32 respectively both from Bethesda. The thing that sticks out the most to me with this is that these two likely come from the same household. This was confirmed in the original data as the donations are coming from the same address. Melanie is a farmer and Mark works in banking services. These two stick out to me again as the fifth highest contribution comes from Mark Jacobsen who is likely the same person as Mark P. Jacobsen but since they dropped the P. initial it is registering as a different person. If you add in the 49,270.17 he takes the lead for the top donor. I confirmed this to be true by looking at the original dataset. I also noticed that they have submitted more with different names like including Mr or Mrs in front of their name. 
+
+```{r}
+top_donors <- md_contribs |>
+  group_by(contributor_city, contributor_name) |>
+  summarise(total_amount = sum(contribution_receipt_amount))
+  
+```
+
+### **BONUS QUESTION**
+
+### **Q:** What's another problem you can identify in the data? How would it impact your ability to do an accurate analysis of something? (Three bonus points)
+
+### Then, write code that would fix the issue. (Five bonus points)
+
+**A:** Going back to the previous question, I could fix the Mark Jacobsen datapoints by changing the name to Mark P. Jacobsen everytime it pops up. Same with the ones for other donations under different names but from the same person for this couple. By fixing this it would just make the data easier to read and not add additional work to my load.
+
+```{r}
+md_contribs <- md_contribs |>
+  mutate(contributor_name = case_when(
+    contributor_name == "JACOBSEN, MARK" ~ "JACOBSEN, MARK P.",
+    contributor_name == "JACOBSEN, MARK" ~ "JACOBSEN, MARK P.",
+    contributor_name == "JACOBSEN, MARK P. MR." ~ "JACOBSEN, MARK P.",
+    contributor_name == "JACOBSEN, MELANIE MRS." ~ "JACOBSEN, MELANIE",
+    TRUE ~ contributor_name))
+
+```
+
+```{r}
+
+```
+
+
+
