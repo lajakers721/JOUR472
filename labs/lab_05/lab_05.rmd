@@ -1,0 +1,172 @@
+---
+title: "lab_05"
+author: "derek willis, updated by Aidan Hughes"
+date: "2026-10-01"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Load libraries and establish settings
+
+```{r}
+# load the tidyverse
+library(tidyverse)
+```
+
+## Getting Started
+
+This week we'll be combining and joining data to make it more useful and to ask some questions about it. We'll revisit our new Maryland voters data and try to join it with contributions to the Harris campaign from Maryland donors made via ActBlue. Can we find new voters who are not registered Democrats who gave to Harris after she became a presidential candidate on July 21? What, if anything, can we say about those people?
+
+We'll be doing something similar to what Ence Morse did for [this Washington Post story](https://www.washingtonpost.com/politics/2024/09/24/kamala-harris-younger-donors/?pwapi_token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJyZWFzb24iOiJnaWZ0IiwibmJmIjoxNzI3MzIzMjAwLCJpc3MiOiJzdWJzY3JpcHRpb25zIiwiZXhwIjoxNzI4NzA1NTk5LCJpYXQiOjE3MjczMjMyMDAsImp0aSI6ImIwYWMxNTk4LWMwMDgtNDE5Ny04MjAyLWVmMWNjZWFmYWZiMiIsInVybCI6Imh0dHBzOi8vd3d3Lndhc2hpbmd0b25wb3N0LmNvbS9wb2xpdGljcy8yMDI0LzA5LzI0L2thbWFsYS1oYXJyaXMteW91bmdlci1kb25vcnMvIn0.3-s0tBkMV7Y9DD21CBsKMlaliGlOKT2egCO-UFT735Y), just on a smaller scale.
+
+## Tasks
+
+**First, load two CSV contribution files in the `data` folder, one each for donations made in July and August, and then combine them into a single dataframe.**
+
+```{r}
+# load the Harris contribution data files and combine them
+july_harris <- read_csv ("data/july_harris.csv")
+august_harris <- read_csv ("data/august_harris.csv")
+summer_harris <- bind_rows(july_harris, august_harris)
+```
+
+**Next, let's read in the new voters (people who registered in 2024):**
+
+```{r}
+# load the new voters data
+new_voters <- read_csv ("data/new_voters.csv")
+```
+
+**Next join the Harris donations to the voter data. Remember, people's names are common, __so you'll want to use name columns and address information__. You'll need to figure out which columns to use from both dataframes.**
+
+The new_voters data has both a single Address column and various parts of the address, such as HouseNumber. Make a plan for picking your join columns - try out some combinations - and save the results to a new dataframe.
+
+Instead of a left_join, use the function inner_join this time. Unlike left_join or right_join, inner_join gets rid of any rows in BOTH data sets if there wasn't a match.
+
+Using multiple columns in your join_by just requires you to separate them with commas. It should look like this:
+
+join_by(column1,
+        column2,
+        column3)
+
+Note that you might get a "many to many" error when you run the code, depending on the columns you pick That's R letting you know that something in one data set matched with multiple rows in the other data set. That's something really important to keep your eye out for, since R will perform the match against all those rows, meaning you might wind up with multiple extra rows when you should only have one.
+
+You'll want to minimize the amount of rows that this is happening to by picking smart join columns, but we probably won't eliminate it completely. We won't deal with that for the purpose of this lab, but it's important to be aware of.
+
+```{r}
+# join the combined Harris file to the new voters
+# you will need to determine what columns to use
+summer_new_voters <- summer_harris |> inner_join(new_voters, join_by(first_name==FirstName, last_name==LastName,address_one==Address))
+
+
+```
+
+## Answer questions
+
+
+**Q1. Explain why you used the columns you did to make the join, and why that result is better than other ways you tried. Are there any problems with the join you made, such as the possibility of false positives?**
+
+
+A1. I chose the three columns that I did because it is exactly what is being asked for. It takes the full name of somebody and their address and if it matches with the full name of somebody and the address in the other dataset it pulls both together, if not that row is deleted. Adding the address gets rid of most of the concerns of getting false positives. If it was just first and last name there likely would be because there is a high chance that there are people with the same name in the state. 
+
+**Q2. Based on your join, how many donations to Harris have come from people who registered this year? How many unique people does that represent, and which donors have given the largest _number_ of donations since July 20?** 
+
+A2. That number would be the number of rows in the new dataset so 365 donations came from people who registered that year. By looking at the voter ID, I was able to remove repeats from it, leaving us with 271 rows meaning taht is how many unique people that 365 donations represent. By sorting by VTR_ID as well, I was able to see which voter IDs had the most amount of donations and then look at the dataset to see who they were. Sophia Hoffer-Perkins, Eric Snipe and Brittany Musolino are tied for the most amount of donations given at seven each. 
+
+```{r}
+summer_new_voters |>
+  group_by(VTR_ID) |>
+  summarise(
+    count=n()) |>
+    arrange(desc(count))
+```
+
+
+**Q3. What are the party and gender breakdowns of those donors? How many donations has Harris gotten from non-Democrats?**
+
+
+A3.The party breakdown is that democrats gave the most donations with 322, second was unaffiliated with 34 (I used google to find out what UNA stood for) and the rest the numbers were less than five each. From non-democrats, Harris got 43 donations. The gender breakdown is that 190 of the donations came from females, 163 came from males and 12 were undefined. 
+
+
+```{r}
+summer_new_voters |>
+  group_by (Party) |>
+  summarise(
+    count=n())
+
+summer_new_voters |>
+  group_by (Gender) |>
+  summarise(
+    count=n())
+```
+
+
+**Q4. Choose your own adventure: I want you to come up with a question you could ask of one of the dataframes we've created for this lab. It could involve just the new voters, or the donors or the joined dataframe, but it cannot be a variation of a previous question (so, for example, you can't ask, "How many Republicans have given to Harris").**
+
+**First write the question and then try to answer it by writing code. If you're not sure of the exact code, try googling (or ask me for advice) but, at a minimum, describe what you think you'd have to do to answer it and what the results would look like. That can help.**
+
+
+A4: My question is what counties have given to Harris the most and further through that, what regions of Maryland have given to Harris the most. 
+
+The coding that I did revealed that Montgomery donated the most with 113 donations, then PG County with 63 donations, Baltimore City with 48 donations, then Baltimore County and so on and so forth. 
+
+To do the second part of my question, I added a new column to the summer_new_voters dataset that based on the county would put it into a region. From there I took the count of how many times each region appeared in the dataset. The Capital Region had the most donations with 194, Central Maryland had the second most with 125, Southern Maryland was third with 32, Eastern Shore was fourth with 10 and Western Maryland was last with 4. 
+
+```{r}
+summer_new_voters |>
+  group_by (County) |>
+  summarise(
+    count=n()) |>
+    arrange(desc(count))
+
+summer_new_voters <- summer_new_voters |>
+  mutate(
+    Region = case_when(
+      County == "Garrett" ~ "Western Maryland",
+      County == "Allegany" ~ "Western Maryland",
+      County == "Washington" ~ "Western Maryland",
+      County == "Frederick" ~ "Capital Region",
+      County == "Montgomery" ~ "Capital Region",
+      County == "Prince George's" ~ "Capital Region",
+      County == "Anne Arundel" ~ "Central Maryland",
+      County == "Baltimore City" ~ "Central Maryland",
+      County == "Baltimore County" ~ "Central Maryland",
+      County == "Carroll" ~ "Central Maryland",
+      County == "Harford" ~ "Central Maryland",
+      County == "Howard" ~ "Central Maryland",
+      County == "Calvert" ~ "Southern Maryland",
+      County == "Charles" ~ "Southern Maryland",
+      County == "Saint Mary's" ~ "Southern Maryland",
+      County == "Kent" ~ "Eastern Shore",
+      County == "Queen Anne's" ~ "Eastern Shore",
+      County == "Talbot" ~ "Eastern Shore",
+      County == "Caroline" ~ "Eastern Shore",
+      County == "Dorchester" ~ "Eastern Shore",
+      County == "Wicomico" ~ "Eastern Shore",
+      County == "Somerset" ~ "Eastern Shore",
+      County == "Worcester" ~ "Eastern Shore",
+      County == "Cecil" ~ "Eastern Shore"
+    )
+  )
+summer_new_voters|>
+  group_by(Region) |>
+  summarise(amount=n()) |>
+  arrange(desc(amount))
+```
+
+
+**BONUS QUESTION: What's another publicly available data set you could join with these to ask additional questions? You'll need to provide a link to the data, what question(s) it would allow you to ask, and briefly describe any issues that might prevent you from joining the data without additional cleaning or manipulation (2 points).**
+
+A: A dataset that could be joined with the datasets used above to ask more questions would be one with Trump donations from the same year . I was unable to find one similar to the datasets from above. If I had though I would use it to see if somebody contributed to both sides of the election in the 2024 election cycle. It would also allow us to compare the data and see if the questions asked above find similar responses or inverse responses. An issue that could prevent this is that the dataset I am looking for extends beyond just the Summer months while the Harris dataset is exclusive to just July and August meaning that a lot of data would be missing. Ideally it would be year data against year data. s
+
+**Then, download the data and add it to the "data" folder of this lab. Write the code needed to perform the join. (4 points)**
+
+```{r}
+
+```
+
+
+
