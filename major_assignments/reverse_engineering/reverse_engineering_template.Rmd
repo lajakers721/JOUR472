@@ -1,6 +1,6 @@
 ---
 title: "Reverse Engineering Project"
-author: "Student names here"
+author: "Jake Ballard and Alexandra Townsend"
 date: "Date here"
 output:
   html_document:
@@ -18,14 +18,17 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Introduction 
 
-In this notebook, we are reverse engineering the story, [STORY NAME](STORY URL)
+In this notebook, we are reverse engineering the story, "CEOs gave heavily during legislative session, exposing loophole in NC's fundraising ban" (https://www.wral.com/archive/17716104/)
 
 ## Load libraries
 
 Loading required libraries for this analysis.
 
 ```{r echo=FALSE, message=FALSE}
-
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(janitor)
+options(scipen=999)
 ```
 
 ## Load and Cleaning Data
@@ -39,20 +42,35 @@ In this section, describe the source of the data, write a basic data dictionary 
 
 # Clean required data and prepare for analysis if needed. 
 
-
+donor_data <- read_csv("data/donors0103-0701.csv")
+cleaned_donor_data <- donor_data |>
+  clean_names() |>
+  mutate(city = str_to_title(city)) |>
+  mutate(profession = str_to_title(profession)) |>
+  mutate(street_line1 = str_to_title(street_line1)) |>
+  mutate(street_line2 = str_to_title(street_line2)) |>
+  mutate(street_line1 = str_to_title(street_line1)) |>
+  mutate(employer_name = str_to_title(employer_name)) |>
+  mutate(zip = str_sub(zip, start=1L, end=5L)) |>
+  mutate(amount = as.numeric(gsub("[$,]", "", amount)))
 ```
+
+**A** We downloaded the data from the Github link provided, downloading the csv file and moving it to the data folder in the repo. It has 23 columns and 17,401 rows. An immediate concern that we had was all the data not being cleaned. The name one also has a cleaned column alongside an uncleaned column, but it can not be said for the other columns. The city one has different formatting for the same city with some being all caps and some being all lowercase. The street line's have the same issue but it seems that the same places are formatted the same. We've noticed it in basically every column. What is nice as well is that all the commiteee information seem to be in the same format and are already cleaned. Also, the amount column is not numeric and to change that I had to find a way to get rid of the $ sign in front and so I used AI to find a solution to that problem. 
 
 ## Sentences to Engineer
 In this notebook, we are reverse engineering five sentences from the story.
 
 ### Sentence 1
 
-* **Sentence text**: [Paste in sentence to engineer here]
+* **Sentence text**: "R.H. Barringer's board chair, Jasie Barringer, donated another $8,200 in-session, and Teresa Craig kicked in another $5,200 to Berger. The North Carolina Beer & Wine Wholesalers Association PAC gave $18,400 during the week before session and on opening day."
 * **Analysis summary**: [Write up two to three sentences describing the results of your analysis.  Were you able to confirm the finding? If not, why not?]
-
+**A** We were able to confirm the finding by looking at the date. The first donation I found was the was Teresa's donation of 5,200 which was on 5/18/18, by sorting by the date we can find the donations leading up to that date. Low and behold, Teresa's was there as previously mentioned, Barringer donated 5,200 that date as well as three 1,000 donations after (combining to 8,200), and when you look at the donations in the week leading up to it by the association, it adds up to 18,400 perfectly. 
 ```{r}
 # Put code to reverse engineer sentence here
-
+sentence_one <- cleaned_donor_data |>
+  filter(name_clean == "TERESA S CRAIG" | name_clean == "JASIE S BARRINGER" | name_clean == "NC BEER & WINE WHOLESALERS ASSOC PAC")
+sentence_one |>
+  group_by(date)
 # Display results of code below this codeblock
 
 ```
