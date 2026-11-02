@@ -77,11 +77,22 @@ sentence_one |>
 
 ### Sentence 2
 
-* **Sentence text**: [Paste in sentence to engineer here]
+* **Sentence text**: "Scott Prestage, with Prestage Farms, gave Moore's campaign $5,200 right at the end of session, after the General Assembly passed legislation meant to make lawsuits against hog farms harder to win. Going back to the beginning of the year, people connected to Prestage Farms gave Moore $31,000 in campaign donations. Half are dated two-and-a-half months before the session began. The rest came in the session's closing days or the day after the session ended."
 * **Analysis summary**: [Write up two to three sentences describing the results of your analysis.  Were you able to confirm the finding? If not, why not?]
+**A** Yes we were able to confirm the findings, people associated with Prestage Farms would donate around $31,000 to the Friends of Tim Moore. John, Scott, and WH Prestage would end up donating 31,200 exactly to the Friends of Tim Moore Campaign
 
 ```{r}
 # Put code to reverse engineer sentence here
+donations_prestage <- cleaned_donor_data |>
+  filter(name_clean == "JOHN L PRESTAGE" | name_clean == "SCOTT J PRESTAGE" | name_clean == "W H PRESTAGE") |>
+  filter(date >= "2018-03-01" & date <= "2018-06-30")
+
+donations_prestage |>
+  select(name_clean, amount, date, committee_name) |>
+  arrange(date)
+donations_prestage |>
+  group_by(name_clean, committee_name) |>
+  summarise(total_donated = sum(amount))
 
 # Display results of code below this codeblock
 
@@ -89,12 +100,17 @@ sentence_one |>
 
 ### Sentence 3
 
-* **Sentence text**: [Paste in sentence to engineer here]
+* **Sentence text**: “More than a third of the PAC money logged during session went to Rabon's campaign.”
 * **Analysis summary**: [Write up two to three sentences describing the results of your analysis.  Were you able to confirm the finding? If not, why not?]
+**A** What I did was take the data and only keep the donations that came from the session which was May 16 to June 29, according to the GitHub. The reason for this was because the data is sorted in order by the date going from earliest to latest. I then took the total amount of money in that time period directed toward Rabon's committee and took it out of the total amount of money in that time period to give the percetange after it was multiplied by 100. The number that I got was 0.74% which is far off from the number. To me what that means is that money that went toward Rabon is under a different name in the dataset. For instance there are several directed toward North Carolina committees which is the state that Rabon is a Senator for. 
 
 ```{r}
-# Put code to reverse engineer sentence here
-
+# Put code to reverse engineer sentence here (I used Google to find out how to sort from specific row numbers and to specify the sum from a specific column as I could not find it in my notes)
+sentence_two <- cleaned_donor_data %>% slice(14133:17097)
+rabon_total <- sentence_two |>
+  filter(committee_name == "RABON FOR SENATE")
+sum(rabon_total$amount)/sum(sentence_two$amount) * 100
+  
 # Display results of code below this codeblock
 
 ```

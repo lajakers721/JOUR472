@@ -1588,11 +1588,15 @@ issues you discovered working with this data.</p>
 ## ℹ Use `spec()` to retrieve the full column specification for this data.
 ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a>cleaned_donor_data <span class="ot">&lt;-</span> donor_data <span class="sc">|&gt;</span></span>
-<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">city =</span> <span class="fu">str_to_title</span>(city)) <span class="sc">|&gt;</span></span>
-<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">profession =</span> <span class="fu">str_to_title</span>(profession)) <span class="sc">|&gt;</span></span>
-<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">street_line1 =</span> <span class="fu">str_to_title</span>(street_line1)) <span class="sc">|&gt;</span></span>
-<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">street_line2 =</span> <span class="fu">str_to_title</span>(street_line2)) <span class="sc">|&gt;</span></span>
-<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">street_line1 =</span> <span class="fu">str_to_title</span>(street_line1))</span></code></pre></div>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>  <span class="fu">clean_names</span>() <span class="sc">|&gt;</span></span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">city =</span> <span class="fu">str_to_title</span>(city)) <span class="sc">|&gt;</span></span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">profession =</span> <span class="fu">str_to_title</span>(profession)) <span class="sc">|&gt;</span></span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">street_line1 =</span> <span class="fu">str_to_title</span>(street_line1)) <span class="sc">|&gt;</span></span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">street_line2 =</span> <span class="fu">str_to_title</span>(street_line2)) <span class="sc">|&gt;</span></span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">street_line1 =</span> <span class="fu">str_to_title</span>(street_line1)) <span class="sc">|&gt;</span></span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">employer_name =</span> <span class="fu">str_to_title</span>(employer_name)) <span class="sc">|&gt;</span></span>
+<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">zip =</span> <span class="fu">str_sub</span>(zip, <span class="at">start=</span><span class="dv">1</span><span class="dt">L</span>, <span class="at">end=</span><span class="dv">5</span><span class="dt">L</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">amount =</span> <span class="fu">as.numeric</span>(<span class="fu">gsub</span>(<span class="st">&quot;[$,]&quot;</span>, <span class="st">&quot;&quot;</span>, amount)))</span></code></pre></div>
 <p><strong>A</strong> We downloaded the data from the Github link
 provided, downloading the csv file and moving it to the data folder in
 the repo. It has 23 columns and 17,401 rows. An immediate concern that
@@ -1603,7 +1607,9 @@ city with some being all caps and some being all lowercase. The street
 line’s have the same issue but it seems that the same places are
 formatted the same. We’ve noticed it in basically every column. What is
 nice as well is that all the commiteee information seem to be in the
-same format and are already cleaned.</p>
+same format and are already cleaned. Also, the amount column is not
+numeric and to change that I had to find a way to get rid of the $ sign
+in front and so I used AI to find a solution to that problem.</p>
 </div>
 <div id="sentences-to-engineer" class="section level2">
 <h2>Sentences to Engineer</h2>
@@ -1612,44 +1618,51 @@ story.</p>
 <div id="sentence-1" class="section level3">
 <h3>Sentence 1</h3>
 <ul>
-<li><strong>Sentence text</strong>: [Paste in sentence to engineer
-here]</li>
+<li><strong>Sentence text</strong>: “R.H. Barringer’s board chair, Jasie
+Barringer, donated another $8,200 in-session, and Teresa Craig kicked in
+another $5,200 to Berger. The North Carolina Beer &amp; Wine Wholesalers
+Association PAC gave $18,400 during the week before session and on
+opening day.”</li>
 <li><strong>Analysis summary</strong>: [Write up two to three sentences
 describing the results of your analysis. Were you able to confirm the
-finding? If not, why not?]</li>
+finding? If not, why not?] <strong>A</strong> We were able to confirm
+the finding by looking at the date. The first donation I found was the
+was Teresa’s donation of 5,200 which was on 5/18/18, by sorting by the
+date we can find the donations leading up to that date. Low and behold,
+Teresa’s was there as previously mentioned, Barringer donated 5,200 that
+date as well as three 1,000 donations after (combining to 8,200), and
+when you look at the donations in the week leading up to it by the
+association, it adds up to 18,400 perfectly.</li>
 </ul>
 <div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="co"># Put code to reverse engineer sentence here</span></span>
-<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a></span>
-<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a><span class="co"># Display results of code below this codeblock</span></span></code></pre></div>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>sentence_one <span class="ot">&lt;-</span> cleaned_donor_data <span class="sc">|&gt;</span></span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>  <span class="fu">filter</span>(name_clean <span class="sc">==</span> <span class="st">&quot;TERESA S CRAIG&quot;</span> <span class="sc">|</span> name_clean <span class="sc">==</span> <span class="st">&quot;JASIE S BARRINGER&quot;</span> <span class="sc">|</span> name_clean <span class="sc">==</span> <span class="st">&quot;NC BEER &amp; WINE WHOLESALERS ASSOC PAC&quot;</span>)</span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a>sentence_one <span class="sc">|&gt;</span></span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a>  <span class="fu">group_by</span>(date)</span></code></pre></div>
+<pre><code>## # A tibble: 49 × 23
+## # Groups:   date [34]
+##    source     name        name_clean street_line1 street_line2 city  state zip  
+##    &lt;chr&gt;      &lt;chr&gt;       &lt;chr&gt;      &lt;chr&gt;        &lt;chr&gt;        &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;
+##  1 candidates NC Beer &amp; … NC BEER &amp;… 210 North P… &lt;NA&gt;         Rale… NC    27601
+##  2 candidates NC BEER AN… NC BEER &amp;… 210 N. Pers… &lt;NA&gt;         Rale… NC    27601
+##  3 candidates NC BEER &amp; … NC BEER &amp;… 210 North P… &lt;NA&gt;         Rale… NC    27601
+##  4 candidates NC BEER &amp; … NC BEER &amp;… 210 North P… &lt;NA&gt;         Rale… NC    27601
+##  5 candidates NORTH CARO… NC BEER &amp;… 210 North P… &lt;NA&gt;         Rale… NC    27601
+##  6 candidates NC Beer &amp; … NC BEER &amp;… 210 N Perso… &lt;NA&gt;         Rale… NC    27601
+##  7 candidates NC BEER &amp; … NC BEER &amp;… 210 North P… &lt;NA&gt;         Rale… NC    27601
+##  8 candidates NORTH CARO… NC BEER &amp;… 210 North P… &lt;NA&gt;         Rale… NC    27601
+##  9 candidates NC BEER &amp; … NC BEER &amp;… 210 N. Pers… &lt;NA&gt;         Rale… NC    27601
+## 10 candidates NORTH CARO… NC BEER &amp;… 210 North P… &lt;NA&gt;         Rale… NC    27601
+## # ℹ 39 more rows
+## # ℹ 15 more variables: profession &lt;chr&gt;, employer_name &lt;chr&gt;,
+## #   transaction_type &lt;chr&gt;, committee_name &lt;chr&gt;, sboe_id &lt;chr&gt;,
+## #   committee_street1 &lt;chr&gt;, committee_street2 &lt;chr&gt;, committee_city &lt;chr&gt;,
+## #   committee_state &lt;chr&gt;, committee_zip &lt;chr&gt;, report_name &lt;chr&gt;, date &lt;chr&gt;,
+## #   amount &lt;dbl&gt;, form_payment &lt;chr&gt;, purpose &lt;chr&gt;</code></pre>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="co"># Display results of code below this codeblock</span></span></code></pre></div>
 </div>
 <div id="sentence-2" class="section level3">
 <h3>Sentence 2</h3>
-<ul>
-<li><strong>Sentence text</strong>: [Paste in sentence to engineer
-here]</li>
-<li><strong>Analysis summary</strong>: [Write up two to three sentences
-describing the results of your analysis. Were you able to confirm the
-finding? If not, why not?]</li>
-</ul>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="co"># Put code to reverse engineer sentence here</span></span>
-<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a></span>
-<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a><span class="co"># Display results of code below this codeblock</span></span></code></pre></div>
-</div>
-<div id="sentence-3" class="section level3">
-<h3>Sentence 3</h3>
-<ul>
-<li><strong>Sentence text</strong>: [Paste in sentence to engineer
-here]</li>
-<li><strong>Analysis summary</strong>: [Write up two to three sentences
-describing the results of your analysis. Were you able to confirm the
-finding? If not, why not?]</li>
-</ul>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="co"># Put code to reverse engineer sentence here</span></span>
-<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a></span>
-<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a><span class="co"># Display results of code below this codeblock</span></span></code></pre></div>
-</div>
-<div id="sentence-4" class="section level3">
-<h3>Sentence 4</h3>
 <ul>
 <li><strong>Sentence text</strong>: [Paste in sentence to engineer
 here]</li>
@@ -1661,6 +1674,40 @@ finding? If not, why not?]</li>
 <span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a></span>
 <span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a><span class="co"># Display results of code below this codeblock</span></span></code></pre></div>
 </div>
+<div id="sentence-3" class="section level3">
+<h3>Sentence 3</h3>
+<ul>
+<li><strong>Sentence text</strong>: “More than a third of the PAC money
+logged during session went to Rabon’s campaign.”</li>
+<li><strong>Analysis summary</strong>: [Write up two to three sentences
+describing the results of your analysis. Were you able to confirm the
+finding? If not, why not?] What I did was take the data and only keep
+the donations that came from the session which was May 16 to June 29,
+according to the GitHub. The reason for this was because the data is
+sorted in order by the date going from earliest to latest. I then took
+the count of Rabon donations</li>
+</ul>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="co"># Put code to reverse engineer sentence here (I used Google to find out how to sort between row numbers)</span></span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a>sentence_two <span class="ot">&lt;-</span> cleaned_donor_data <span class="sc">%&gt;%</span> <span class="fu">slice</span>(<span class="dv">14133</span><span class="sc">:</span><span class="dv">17097</span>)</span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a>rabon_total <span class="ot">&lt;-</span> sentence_two <span class="sc">|&gt;</span></span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a>  <span class="fu">filter</span>(committee_name <span class="sc">==</span> <span class="st">&quot;RABON FOR SENATE&quot;</span>)</span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a><span class="fu">sum</span>(rabon_total<span class="sc">$</span>amount)<span class="sc">/</span><span class="fu">sum</span>(sentence_two<span class="sc">$</span>amount) <span class="sc">*</span> <span class="dv">100</span></span></code></pre></div>
+<pre><code>## [1] 0.7398907</code></pre>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="co"># Display results of code below this codeblock</span></span></code></pre></div>
+</div>
+<div id="sentence-4" class="section level3">
+<h3>Sentence 4</h3>
+<ul>
+<li><strong>Sentence text</strong>: [Paste in sentence to engineer
+here]</li>
+<li><strong>Analysis summary</strong>: [Write up two to three sentences
+describing the results of your analysis. Were you able to confirm the
+finding? If not, why not?]</li>
+</ul>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a><span class="co"># Put code to reverse engineer sentence here</span></span>
+<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a></span>
+<span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a><span class="co"># Display results of code below this codeblock</span></span></code></pre></div>
+</div>
 <div id="sentence-5" class="section level3">
 <h3>Sentence 5</h3>
 <ul>
@@ -1670,9 +1717,9 @@ here]</li>
 describing the results of your analysis. Were you able to confirm the
 finding? If not, why not?]</li>
 </ul>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="co"># Put code to reverse engineer sentence here</span></span>
-<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a></span>
-<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a><span class="co"># Display results of code below this codeblock</span></span></code></pre></div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a><span class="co"># Put code to reverse engineer sentence here</span></span>
+<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a></span>
+<span id="cb12-3"><a href="#cb12-3" tabindex="-1"></a><span class="co"># Display results of code below this codeblock</span></span></code></pre></div>
 <p>-30-</p>
 </div>
 </div>
